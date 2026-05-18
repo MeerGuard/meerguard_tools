@@ -6,7 +6,7 @@
 # 
 # Этот скрипт объединяет все операции по настройке ноды:
 # 1. Диагностика текущего состояния
-# 2. Оптимизация системы (BBR, TCP buffers)
+# 2. Оптимизация системы (BBR, TCP buffers, swap)
 # 3. Установка Docker (официальный метод)
 # 4. Установка RemnaWave Node
 # 5. Настройка безопасности (SSH, UFW)
@@ -646,6 +646,9 @@ net.ipv4.tcp_keepalive_probes = 5
 net.ipv4.tcp_fin_timeout = 15
 net.ipv4.tcp_tw_reuse = 1
 net.ipv4.ip_forward = 1
+
+# Swap только как страховка от OOM, не для постоянного использования
+vm.swappiness = 10
 EOF
     sysctl -p /etc/sysctl.d/99-vpn-optimization.conf > /dev/null 2>&1 || true
     log_ok "Sysctl настройки применены"
@@ -660,6 +663,23 @@ LimitNPROC=65535
 EOF
     systemctl daemon-reload
     log_ok "Лимиты Docker настроены"
+
+    # Swap — страховка от OOM-killer при пиках памяти
+    log_info "Проверка swap..."
+    if swapon --show 2>/dev/null | grep -q .; then
+        log_ok "Swap уже настроен"
+    else
+        log_info "Swap не найден, создаю swap-файл 2G..."
+        if fallocate -l 2G /swapfile 2>/dev/null || dd if=/dev/zero of=/swapfile bs=1M count=2048 status=none 2>/dev/null; then
+            chmod 600 /swapfile
+            mkswap /swapfile > /dev/null 2>&1
+            swapon /swapfile
+            grep -q '/swapfile' /etc/fstab || echo '/swapfile none swap sw 0 0' >> /etc/fstab
+            log_ok "Swap-файл 2G создан и активирован"
+        else
+            log_warn "Не удалось создать swap-файл"
+        fi
+    fi
 }
 
 # ============================================================================

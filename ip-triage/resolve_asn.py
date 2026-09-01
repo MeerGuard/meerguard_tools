@@ -12,6 +12,7 @@ CACHE = os.path.join(HERE, "cache")
 
 RIPE_ANNOUNCED = "https://stat.ripe.net/data/announced-prefixes/data.json?resource=AS{asn}"
 IPVERSE_FALLBACK = "https://raw.githubusercontent.com/ipverse/asn-ip/master/as/{asn}/aggregated.json"
+PEERINGDB_NET = "https://peeringdb.com/api/net?asn={asn}"
 
 UA = "meerguard-ip-triage/1.0 (+https://github.com/MeerGuard/meerguard_tools)"
 CACHE_TTL = 24 * 3600
@@ -33,10 +34,34 @@ def _cache_fresh(path: str) -> bool:
     return (time.time() - os.path.getmtime(path)) < CACHE_TTL
 
 
+def peeringdb_lookup(asn: int) -> dict:
+    """Классификация ASN от PeeringDB. Пустой dict если ASN не зарегистрирован."""
+    try:
+        j = _get_json(PEERINGDB_NET.format(asn=asn))
+        arr = j.get("data") or []
+        if not arr:
+            return {}
+        n = arr[0]
+        return {
+            "name": n.get("name") or "",
+            "aka": n.get("aka") or "",
+            "info_type": n.get("info_type") or "",
+            "info_scope": n.get("info_scope") or "",
+            "info_traffic": n.get("info_traffic") or "",
+            "info_ratio": n.get("info_ratio") or "",
+            "info_prefixes4": n.get("info_prefixes4"),
+            "info_prefixes6": n.get("info_prefixes6"),
+            "website": n.get("website") or "",
+        }
+    except (urllib.error.URLError, TimeoutError, ValueError):
+        return {}
+
+
 def resolve(asn: int) -> dict:
     """
     Возвращает {'asn': N, 'source': 'ripe'|'ipverse'|'cache',
-                'prefixes': ['1.2.3.0/24', ...], 'v4_count': int, 'v6_count': int}
+                'prefixes': [...], 'v4_count': int, 'v6_count': int,
+                'peeringdb': {...} or {}}
     """
     os.makedirs(CACHE, exist_ok=True)
     cache = _cache_path(asn)
@@ -71,6 +96,7 @@ def resolve(asn: int) -> dict:
     if not v4 and not v6:
         raise RuntimeError(f"AS{asn}: no prefixes found in RIPE or ipverse")
 
+    pdb = peeringdb_lookup(asn)
     result = {
         "asn": asn,
         "source": source,
@@ -78,6 +104,7 @@ def resolve(asn: int) -> dict:
         "prefixes_v6": v6,
         "v4_count": len(v4),
         "v6_count": len(v6),
+        "peeringdb": pdb,
         "fetched_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
     }
     with open(cache, "w", encoding="utf-8") as f:
@@ -95,7 +122,10 @@ def main() -> int:
     if args.json:
         print(json.dumps(r, ensure_ascii=False, indent=2))
     else:
+        pdb = r.get("peeringdb") or {}
+        pdb_line = f"  name='{pdb.get('name','')}'  type={pdb.get('info_type','?')}  scope={pdb.get('info_scope','?')}" if pdb else "  (нет в PeeringDB)"
         print(f"AS{r['asn']}  source={r['source']}  v4={r['v4_count']}  v6={r['v6_count']}")
+        print(pdb_line)
         for p in r["prefixes"][:15]:
             print(f"  {p}")
         if r["v4_count"] > 15:

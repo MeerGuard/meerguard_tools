@@ -12,7 +12,11 @@
   5. HTTPS-handshake до тех же RU-сайтов — работает ли исходящий 443
      (провайдер может резать зарубежным VPS).
   6. Реверс DNS (PTR) — что видно про сервер снаружи.
-  7. Собирает всё в JSON.
+  7. vernette/ipregion — как гео-сервисы (Google/YouTube/ChatGPT/Netflix/
+     Spotify/Steam/...) видят IP. Критично для банковских нод и AI (Gemini).
+  8. Собирает всё в JSON.
+
+Требования на VPS: bash, curl, jq (для ipregion), ping. Python 3 stdlib.
 """
 import json
 import os
@@ -56,6 +60,26 @@ def _run(cmd: list, timeout: int = 30) -> tuple:
         return p.returncode, p.stdout, p.stderr
     except (subprocess.TimeoutExpired, FileNotFoundError) as e:
         return -1, "", str(e)
+
+
+def ipregion() -> dict:
+    """vernette/ipregion --json --group custom --ipv4"""
+    cmd = "curl -sSL https://ipregion.vrnt.xyz | bash -s -- --json --ipv4"
+    rc, out, err = _run(["bash", "-c", cmd], timeout=120)
+    if rc != 0:
+        return {"ok": False, "error": err[:400], "raw_tail": out[-400:] if out else ""}
+    try:
+        data = json.loads(out)
+    except json.JSONDecodeError as e:
+        return {"ok": False, "error": f"json decode: {e}", "raw_tail": out[-400:]}
+    services = {}
+    if isinstance(data, dict):
+        for k, v in data.items():
+            if isinstance(v, dict):
+                services[k] = v.get("country") or v.get("region") or str(v)[:80]
+            else:
+                services[k] = v
+    return {"ok": True, "services": services, "raw": data}
 
 
 def ip_check_place() -> dict:
@@ -150,6 +174,7 @@ def collect() -> dict:
 
     report["ip_check_place"] = ip_check_place()
     report["dnsbl_spamhaus"] = dnsbl_check(ip)
+    report["ipregion"] = ipregion()
 
     report["ru_ping"] = {t: ping_target(t) for t in RU_TARGETS}
     report["ru_https"] = {t: https_handshake(t) for t in RU_TARGETS}
@@ -163,6 +188,8 @@ def collect() -> dict:
     }
     icp = report["ip_check_place"]
     summary["ip_check_hits"] = len(icp.get("hits", [])) if icp.get("ok") else None
+    ipr = report["ipregion"]
+    summary["ipregion_services"] = len(ipr.get("services", {})) if ipr.get("ok") else None
     report["summary"] = summary
     return report
 
@@ -176,7 +203,8 @@ def main() -> int:
         f"\n[{r.get('ip','?')}] spamhaus={s.get('spamhaus_listed_in')}  "
         f"RU-ping={s.get('ru_ping_alive')}/{s.get('ru_targets_total')}  "
         f"RU-https={s.get('ru_https_alive')}/{s.get('ru_targets_total')}  "
-        f"ipcheck-hits={s.get('ip_check_hits')}\n"
+        f"ipcheck-hits={s.get('ip_check_hits')}  "
+        f"ipregion-svc={s.get('ipregion_services')}\n"
     )
     return 0
 

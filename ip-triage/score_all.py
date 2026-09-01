@@ -34,6 +34,7 @@ def read_hosters(path: str) -> list:
 def one(asn: int, name: str, note: str) -> dict:
     try:
         r = score_asn(asn)
+        pdb = r.get("peeringdb") or {}
         return {
             "asn": asn,
             "name": name,
@@ -48,6 +49,9 @@ def one(asn: int, name: str, note: str) -> dict:
             "white_pct": r["white_pct_mobile"],
             "white_hits": r["white_hits"].get("mobile", 0),
             "source": r["source"],
+            "pdb_type": pdb.get("info_type", "") if pdb else "no-pdb",
+            "pdb_scope": pdb.get("info_scope", "") if pdb else "",
+            "pdb_name": pdb.get("name", "") if pdb else "",
         }
     except Exception as e:
         return {"asn": asn, "name": name, "note": note, "ok": False, "error": str(e)}
@@ -87,7 +91,7 @@ def main() -> int:
         w = csv.DictWriter(f, fieldnames=[
             "asn", "name", "note", "ok", "verdict", "hostile", "prefixes_v4",
             "total_v4", "black_pct", "black_hits", "white_pct", "white_hits",
-            "source", "error",
+            "pdb_type", "pdb_scope", "pdb_name", "source", "error",
         ])
         w.writeheader()
         for r in results:
@@ -98,13 +102,13 @@ def main() -> int:
         f.write(f"# Сводка ip-triage — {time.strftime('%Y-%m-%d %H:%M')}\n\n")
         f.write(f"Скорено ASN: **{len(results)}** ({sum(1 for r in results if r['ok'])} успешно).\n\n")
         f.write("Сортировка: сначала «чистые» (мало палёного, много белого), в конце HOSTILE-ASN и ошибки.\n\n")
-        f.write("| ASN | Хостер | Вердикт | В РФ-блэке | В белом моб. | Префиксов | Всего IPv4 |\n")
-        f.write("|---:|---|---|---:|---:|---:|---:|\n")
+        f.write("| ASN | Хостер | Тип (PeeringDB) | Вердикт | В РФ-блэке | В белом моб. | Префиксов | Всего IPv4 |\n")
+        f.write("|---:|---|---|---|---:|---:|---:|---:|\n")
         for r in results:
             if not r["ok"]:
-                f.write(f"| {r['asn']} | {r['name']} | ERROR: {r['error']} |  |  |  |  |\n")
+                f.write(f"| {r['asn']} | {r['name']} |  | ERROR: {r['error']} |  |  |  |  |\n")
                 continue
-            f.write(f"| {r['asn']} | {r['name']} | {r['verdict']} | {r['black_pct']}% | {r['white_pct']}% | {r['prefixes_v4']} | {r['total_v4']:,} |\n")
+            f.write(f"| {r['asn']} | {r['name']} | {r.get('pdb_type','')} | {r['verdict']} | {r['black_pct']}% | {r['white_pct']}% | {r['prefixes_v4']} | {r['total_v4']:,} |\n")
         f.write("\n## Легенда\n\n")
         f.write("- **HOSTILE-ASN** — в списке ASN, по которым ТСПУ бьёт независимо от блэклиста (Hetzner, OVH, DO, CDN77, G-Core, Akamai, Cloudflare, Amazon, Google, Azure).\n")
         f.write("- **TOXIC** — >=10% адресов уже в РФ-блэклистах.\n")

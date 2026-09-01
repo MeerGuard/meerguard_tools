@@ -149,17 +149,20 @@ def globalping_ping(ip: str, limit: int = 5, wait: int = 25) -> dict:
     }
 
 
-def globalping_http(ip: str, host: str = None, limit: int = 3, wait: int = 25) -> dict:
+def globalping_http(ip: str, sni: str = "cloudflare.com", limit: int = 5, wait: int = 30) -> dict:
+    """
+    Настоящий TLS handshake через RU-пробы: HEAD на порт 443 конкретного IP
+    с указанным SNI. Показывает, реально ли отвечает 443 из РФ — не пинг.
+    """
     payload = {
         "type": "http",
-        "target": host or ip,
+        "target": ip,
         "locations": [{"country": "RU"}],
         "limit": limit,
         "measurementOptions": {
-            "request": {"host": host, "path": "/", "method": "HEAD"},
+            "request": {"host": sni, "path": "/", "method": "HEAD"},
             "protocol": "HTTPS",
             "port": 443,
-            "resolver": ip if not host or host != ip else None,
         },
     }
     try:
@@ -169,35 +172,89 @@ def globalping_http(ip: str, host: str = None, limit: int = 3, wait: int = 25) -
     mid = r.get("id")
     if not mid:
         return {"tool": "globalping-http", "ok": False, "error": f"no id: {r}"}
-    return {"tool": "globalping-http", "ok": True, "measurement_id": mid, "note": "poll manually"}
+
+    url = f"{GLOBALPING_URL}/{mid}"
+    deadline = time.time() + wait
+    data = None
+    while time.time() < deadline:
+        time.sleep(2)
+        try:
+            data = _get_json(url)
+        except Exception:
+            continue
+        if data and data.get("status") == "finished":
+            break
+
+    per_probe = []
+    alive = 0
+    total = 0
+    if data:
+        for res in data.get("results", []):
+            total += 1
+            probe = res.get("probe", {})
+            r_ = res.get("result", {}) or {}
+            timings = r_.get("timings") or {}
+            status_code = r_.get("statusCode")
+            tls_ok = timings.get("tls") is not None
+            ok = tls_ok and status_code is not None
+            per_probe.append({
+                "city": probe.get("city"),
+                "asn": probe.get("asn"),
+                "network": probe.get("network"),
+                "tls_ms": timings.get("tls"),
+                "total_ms": timings.get("total"),
+                "status_code": status_code,
+                "error": r_.get("error") if not ok else None,
+                "ok": ok,
+            })
+            if ok:
+                alive += 1
+    return {
+        "tool": "globalping-http",
+        "ok": True,
+        "target": ip,
+        "sni": sni,
+        "measurement_id": mid,
+        "alive_probes": alive,
+        "total_probes": total,
+        "per_probe": per_probe,
+    }
 
 
-def probe_one(ip: str) -> dict:
-    with ThreadPoolExecutor(max_workers=2) as pool:
+def probe_one(ip: str, sni: str = "cloudflare.com") -> dict:
+    with ThreadPoolExecutor(max_workers=3) as pool:
         f_ch = pool.submit(check_host_tcp, ip)
         f_gp = pool.submit(globalping_ping, ip)
+        f_ht = pool.submit(globalping_http, ip, sni)
         ch = f_ch.result()
         gp = f_gp.result()
+        ht = f_ht.result()
 
-    verdict = "UNKNOWN"
     ch_alive = ch.get("alive_nodes", 0) if ch.get("ok") else 0
     ch_total = ch.get("total_nodes", 0) if ch.get("ok") else 0
     gp_alive = gp.get("alive_probes", 0) if gp.get("ok") else 0
     gp_total = gp.get("total_probes", 0) if gp.get("ok") else 0
+    ht_alive = ht.get("alive_probes", 0) if ht.get("ok") else 0
+    ht_total = ht.get("total_probes", 0) if ht.get("ok") else 0
 
-    if ch_total and gp_total:
-        if ch_alive == 0 and gp_alive == 0:
+    verdict = "UNKNOWN"
+    if ch_total or gp_total or ht_total:
+        if ch_alive == 0 and gp_alive == 0 and ht_alive == 0:
             verdict = "DEAD"
-        elif ch_alive == ch_total and gp_alive == gp_total:
+        elif ht_total and ht_alive == 0 and (ch_alive or gp_alive):
+            verdict = "TLS-BLOCKED"
+        elif ht_alive == ht_total and gp_alive == gp_total and ch_alive == ch_total:
             verdict = "ALIVE"
-        elif ch_alive > 0 or gp_alive > 0:
+        else:
             verdict = "PARTIAL"
 
     return {
         "ip": ip,
+        "sni": sni,
         "verdict": verdict,
         "check_host": ch,
         "globalping": gp,
+        "globalping_http": ht,
         "checked_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
     }
 
@@ -207,35 +264,47 @@ def main() -> int:
         description="Проверяет IP на доступность из РФ через check-host.net + Globalping."
     )
     ap.add_argument("ips", nargs="+", help="один или несколько IP")
+    ap.add_argument("--sni", default="cloudflare.com", help="SNI для TLS handshake (по умолчанию cloudflare.com)")
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args()
 
     all_res = []
     for ip in args.ips:
-        print(f"probing {ip} ...", file=sys.stderr)
-        r = probe_one(ip)
+        print(f"probing {ip} (sni={args.sni}) ...", file=sys.stderr)
+        r = probe_one(ip, sni=args.sni)
         all_res.append(r)
         if args.json:
             continue
         print(f"\n=== {ip} — {r['verdict']} ===")
         ch = r["check_host"]
         gp = r["globalping"]
+        ht = r["globalping_http"]
         if ch.get("ok"):
-            print(f"  check-host: {ch['alive_nodes']}/{ch['total_nodes']} RU-ноды отвечают")
+            print(f"  check-host TCP: {ch['alive_nodes']}/{ch['total_nodes']} RU-ноды отвечают")
             for node, val in ch["per_node"].items():
                 mark = "+" if val["ok"] else ("?" if val["ok"] is None else "-")
                 raw = val.get("raw") or {}
                 t = raw.get("time") if isinstance(raw, dict) else None
                 print(f"     [{mark}] {node}: {t} s" if t else f"     [{mark}] {node}")
         else:
-            print(f"  check-host: ERROR {ch.get('error')}")
+            print(f"  check-host TCP: ERROR {ch.get('error')}")
         if gp.get("ok"):
-            print(f"  globalping: {gp['alive_probes']}/{gp['total_probes']} RU-проб отвечают")
+            print(f"  globalping ping: {gp['alive_probes']}/{gp['total_probes']} RU-проб отвечают")
             for p in gp["per_probe"]:
                 mark = "+" if p["ok"] else "-"
                 print(f"     [{mark}] {p['city']} AS{p['asn']} {p['network']}  loss={p['loss_pct']}%  avg={p['avg_ms']}ms")
         else:
-            print(f"  globalping: ERROR {gp.get('error')}")
+            print(f"  globalping ping: ERROR {gp.get('error')}")
+        if ht.get("ok"):
+            print(f"  globalping HTTPS: {ht['alive_probes']}/{ht['total_probes']} TLS-handshake прошёл")
+            for p in ht["per_probe"]:
+                mark = "+" if p["ok"] else "-"
+                if p["ok"]:
+                    print(f"     [{mark}] {p['city']} AS{p['asn']} {p['network']}  status={p['status_code']}  tls={p['tls_ms']}ms")
+                else:
+                    print(f"     [{mark}] {p['city']} AS{p['asn']} {p['network']}  err={p.get('error')}")
+        else:
+            print(f"  globalping HTTPS: ERROR {ht.get('error')}")
 
     if args.json:
         print(json.dumps(all_res, ensure_ascii=False, indent=2))

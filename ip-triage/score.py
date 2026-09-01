@@ -139,6 +139,7 @@ def score_asn(asn: int) -> dict:
     return {
         "asn": asn,
         "source": asn_data["source"],
+        "peeringdb": asn_data.get("peeringdb") or {},
         "hostile_asn": asn in HOSTILE_ASNS,
         "prefixes_v4": len(prefixes),
         "total_v4_addresses": total_v4,
@@ -168,6 +169,16 @@ def render_report(result: dict) -> str:
     lines.append(f"- Префиксов IPv4: {r['prefixes_v4']}")
     lines.append(f"- Всего адресов IPv4: {r['total_v4_addresses']:,}")
     lines.append(f"- В «недружественных» ASN (блок ФСБ 19.06.2025): **{'да' if r['hostile_asn'] else 'нет'}**")
+    pdb = r.get("peeringdb") or {}
+    if pdb:
+        lines.append(f"- PeeringDB: **{pdb.get('name','?')}** ({pdb.get('aka','')})")
+        lines.append(f"  - Тип: `{pdb.get('info_type','?')}` (Content/NSP/Cable/DSL/ISP/Enterprise/…)")
+        lines.append(f"  - Скоп: `{pdb.get('info_scope','?')}`")
+        lines.append(f"  - Трафик: `{pdb.get('info_traffic','?')}`")
+        if pdb.get("website"):
+            lines.append(f"  - Сайт: {pdb.get('website')}")
+    else:
+        lines.append("- PeeringDB: **нет записи** (хостер не участвует в точках обмена — для нас косвенно плохой знак)")
     lines.append("")
     lines.append(f"## Вердикт: **{r['verdict']}**")
     lines.append("")

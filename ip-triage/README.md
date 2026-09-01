@@ -21,6 +21,9 @@
 - Чёрные списки: `github.com/1andrevich/Re-filter-lists` (ipsum.lst), `github.com/eduard256/russia-blocked-ips` (ip.txt), `antifilter.download/list/subnet.lst`.
 - Белый список мобильных: `github.com/hxehex/russia-mobile-internet-whitelist` (cidrwhitelist.txt).
 - ASN → подсети: `stat.ripe.net` (без ключа), `github.com/ipverse/asn-ip` (fallback офлайн).
+- Классификация ASN (тип сети): `peeringdb.com/api/net?asn=<N>` — Content/NSP/Cable/DSL/ISP/Enterprise. Отсутствие записи в PeeringDB — тоже сигнал (хостер не в точках обмена).
+- Активная проверка IP из РФ: `check-host.net` (TCP-connect с 3 RU-нод), `globalping.io` API (ping + HTTPS handshake с 5 RU-проб).
+- На VPS: `IP.Check.Place`, `vernette/ipregion` (гео-разрешение сервисами), Spamhaus DNSBL.
 
 ## Известные «недружественные» ASN (блок ФСБ 19.06.2025)
 

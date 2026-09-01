@@ -1,0 +1,4 @@
+cache/
+data/*.lst
+__pycache__/
+*.pyc

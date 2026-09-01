@@ -1,0 +1,58 @@
+# популярные хостеры для скоринга. формат: ASN <tab> short-name <tab> заметка
+# правь и запускай score_all.py
+
+# --- российские ---
+197695	timeweb	Timeweb, RU
+49505	selectel	Selectel, RU (основной AS)
+50340	selectel-2	Selectel, доп AS
+39134	beget	Beget, RU
+47764	mailru	Mail.ru
+13238	yandex	Yandex
+200350	yc	Yandex.Cloud
+41947	regru	Reg.ru
+25532	masterhost	Masterhost
+44112	firstvds	FirstVDS
+29182	rusonyx	Rusonyx / RuVDS
+57858	firstbyte	FirstByte
+9002	retn	RETN (транзит)
+198610	hostkey-ru	Hostkey RU
+210644	aeza	Aeza (RU/multi)
+208593	manta	Manta Tech / Multi
+207713	ngenix	Ngenix CDN
+59504	timeweb-cloud	Timeweb Cloud
+215730	vdsina	VDSina (Aeza)
+
+# --- зарубежные, дружественные ---
+197540	netcup	netcup, DE/AT
+51167	contabo	Contabo, DE
+34549	combahton	combahton, DE
+42473	anexia	Anexia, AT
+210079	edis	EDIS Global
+41947-x	x	x
+50340-x	x	x
+
+# --- зарубежные, HOSTILE (в блоке ФСБ 19.06.2025) ---
+24940	hetzner	Hetzner, DE
+16276	ovh	OVH, FR (multi)
+14061	digitalocean	DigitalOcean
+20473	vultr	Vultr / Choopa
+63949	linode	Linode / Akamai
+16509	amazon	Amazon AWS
+15169	google	Google Cloud
+8075	microsoft	Microsoft Azure
+13335	cloudflare	Cloudflare
+60068	cdn77	CDN77
+199524	gcore	G-Core Labs
+20940	akamai	Akamai
+8560	ionos	IONOS 1&1
+24961	myloc	myLoc / WebtroPia
+21859	c3net	C3.net
+
+# --- бюджетные и "серые" ---
+209160	pq	PQ Hosting
+44042	fornex	Fornex
+57345	ivelt	iVelt
+44066	firstcolo	FirstColo
+34772	novogara	Novogara
+203380	freakhosting	FreakHosting DE
+57604	waicore	WAIcore (проверить)

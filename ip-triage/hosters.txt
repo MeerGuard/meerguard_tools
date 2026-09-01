@@ -9,7 +9,9 @@
 47764	mailru	Mail.ru
 13238	yandex	Yandex
 200350	yc	Yandex.Cloud
-41947	regru	Reg.ru
+5537	regru-main	Reg.ru / RU-CENTER (основной)
+25537	regru-2	Reg.ru / RU-CENTER (доп)
+39494	regru-3	Reg.ru / RU-CENTER (доп)
 25532	masterhost	Masterhost
 44112	firstvds	FirstVDS
 29182	rusonyx	Rusonyx / RuVDS
@@ -20,7 +22,7 @@
 208593	manta	Manta Tech / Multi
 207713	ngenix	Ngenix CDN
 59504	timeweb-cloud	Timeweb Cloud
-215730	vdsina	VDSina (Aeza)
+48282	vdsina	VDSina (Hosting technology LTD)
 
 # --- зарубежные, дружественные ---
 197540	netcup	netcup, DE/AT
@@ -28,8 +30,6 @@
 34549	combahton	combahton, DE
 42473	anexia	Anexia, AT
 210079	edis	EDIS Global
-41947-x	x	x
-50340-x	x	x
 
 # --- зарубежные, HOSTILE (в блоке ФСБ 19.06.2025) ---
 24940	hetzner	Hetzner, DE
@@ -50,9 +50,12 @@
 
 # --- бюджетные и "серые" ---
 209160	pq	PQ Hosting
-44042	fornex	Fornex
-57345	ivelt	iVelt
+44051	fornex	Fornex (основной)
+16003	fornex-nl	Fornex NL
+48018	fornex-ru	Fornex RU
 44066	firstcolo	FirstColo
 34772	novogara	Novogara
 203380	freakhosting	FreakHosting DE
-57604	waicore	WAIcore (проверить)
+213887	waicore	WAIcore Ltd
+219262	waicore-ru	WAIcore RU (Ushakov)
+# iVelt — не нашли ASN, вероятно арендуют чужой

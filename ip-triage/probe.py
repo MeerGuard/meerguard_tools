@@ -42,7 +42,7 @@ def _post_json(url: str, payload: dict, timeout: int = 30) -> dict:
 
 def check_host_tcp(ip: str, port: int = 443, wait: int = 12) -> dict:
     target = f"{ip}:{port}"
-    submit_url = CHECK_HOST_URL.format(target=urllib.parse.quote(target))
+    submit_url = CHECK_HOST_URL.format(target=urllib.parse.quote(target, safe=""))
     try:
         r = _get_json(submit_url)
     except Exception as e:
@@ -88,11 +88,24 @@ def check_host_tcp(ip: str, port: int = 443, wait: int = 12) -> dict:
     }
 
 
-def globalping_ping(ip: str, limit: int = 5, wait: int = 25) -> dict:
+def _ru_locations(city: str = None, asn: int = None, network: str = None) -> list:
+    """Собирает locations-фильтр для Globalping. По умолчанию — вся РФ."""
+    loc = {"country": "RU"}
+    if city:
+        loc["city"] = city
+    if asn:
+        loc["asn"] = asn
+    if network:
+        loc["network"] = network
+    return [loc]
+
+
+def globalping_ping(ip: str, limit: int = 5, wait: int = 25,
+                    city: str = None, asn: int = None, network: str = None) -> dict:
     payload = {
         "type": "ping",
         "target": ip,
-        "locations": [{"country": "RU"}],
+        "locations": _ru_locations(city, asn, network),
         "limit": limit,
         "measurementOptions": {"packets": 3},
     }
@@ -149,7 +162,8 @@ def globalping_ping(ip: str, limit: int = 5, wait: int = 25) -> dict:
     }
 
 
-def globalping_http(ip: str, sni: str = "cloudflare.com", limit: int = 5, wait: int = 30) -> dict:
+def globalping_http(ip: str, sni: str = "cloudflare.com", limit: int = 5, wait: int = 30,
+                    city: str = None, asn: int = None, network: str = None) -> dict:
     """
     Настоящий TLS handshake через RU-пробы: HEAD на порт 443 конкретного IP
     с указанным SNI. Показывает, реально ли отвечает 443 из РФ — не пинг.
@@ -157,7 +171,7 @@ def globalping_http(ip: str, sni: str = "cloudflare.com", limit: int = 5, wait: 
     payload = {
         "type": "http",
         "target": ip,
-        "locations": [{"country": "RU"}],
+        "locations": _ru_locations(city, asn, network),
         "limit": limit,
         "measurementOptions": {
             "request": {"host": sni, "path": "/", "method": "HEAD"},
@@ -221,11 +235,12 @@ def globalping_http(ip: str, sni: str = "cloudflare.com", limit: int = 5, wait: 
     }
 
 
-def probe_one(ip: str, sni: str = "cloudflare.com") -> dict:
+def probe_one(ip: str, sni: str = "cloudflare.com", port: int = 443,
+              city: str = None, asn: int = None, network: str = None) -> dict:
     with ThreadPoolExecutor(max_workers=3) as pool:
-        f_ch = pool.submit(check_host_tcp, ip)
-        f_gp = pool.submit(globalping_ping, ip)
-        f_ht = pool.submit(globalping_http, ip, sni)
+        f_ch = pool.submit(check_host_tcp, ip, port)
+        f_gp = pool.submit(globalping_ping, ip, 5, 25, city, asn, network)
+        f_ht = pool.submit(globalping_http, ip, sni, 5, 30, city, asn, network)
         ch = f_ch.result()
         gp = f_gp.result()
         ht = f_ht.result()
@@ -265,13 +280,21 @@ def main() -> int:
     )
     ap.add_argument("ips", nargs="+", help="один или несколько IP")
     ap.add_argument("--sni", default="cloudflare.com", help="SNI для TLS handshake (по умолчанию cloudflare.com)")
+    ap.add_argument("--port", type=int, default=443, help="TCP порт для check-host (по умолчанию 443)")
+    ap.add_argument("--city", default=None, help="Globalping: конкретный город РФ (напр. Novosibirsk)")
+    ap.add_argument("--asn", type=int, default=None, help="Globalping: конкретный ASN (напр. 8359 = МТС)")
+    ap.add_argument("--network", default=None, help="Globalping: подстрока имени сети (напр. 'MTS')")
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args()
 
     all_res = []
     for ip in args.ips:
-        print(f"probing {ip} (sni={args.sni}) ...", file=sys.stderr)
-        r = probe_one(ip, sni=args.sni)
+        target_line = f"sni={args.sni} port={args.port}"
+        if args.city or args.asn or args.network:
+            target_line += f" | пробы: city={args.city} asn={args.asn} network={args.network}"
+        print(f"probing {ip} ({target_line}) ...", file=sys.stderr)
+        r = probe_one(ip, sni=args.sni, port=args.port,
+                      city=args.city, asn=args.asn, network=args.network)
         all_res.append(r)
         if args.json:
             continue

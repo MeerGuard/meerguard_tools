@@ -55,8 +55,12 @@ def _ptr(ip: str) -> str:
 
 
 def _run(cmd: list, timeout: int = 30) -> tuple:
+    env = os.environ.copy()
+    env.setdefault("TERM", "xterm-256color")
+    env.setdefault("NO_COLOR", "1")
+    env.setdefault("LC_ALL", "C.UTF-8")
     try:
-        p = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+        p = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, env=env)
         return p.returncode, p.stdout, p.stderr
     except (subprocess.TimeoutExpired, FileNotFoundError) as e:
         return -1, "", str(e)
@@ -83,31 +87,25 @@ def ipregion() -> dict:
 
 
 def ip_check_place() -> dict:
-    """bash <(curl -Ls IP.Check.Place) -l en -R 0"""
-    rc, out, err = _run(["bash", "-c", "curl -Ls IP.Check.Place | bash -s -- -l en -R 0"], timeout=90)
+    """bash <(curl -Ls IP.Check.Place) -l en -4 -j -n  (json mode). Дёргает ~30 API, долгий."""
+    rc, out, err = _run(
+        ["bash", "-c", "curl -Ls IP.Check.Place | bash -s -- -l en -4 -j -n"],
+        timeout=300,
+    )
     if rc != 0:
-        return {"ok": False, "error": err[:500], "raw_tail": out[-500:]}
-    lines = out.splitlines()
-    verdict, hits = [], []
-    for ln in lines:
-        s = ln.strip()
-        if not s:
-            continue
-        low = s.lower()
-        if "blacklist" in low or "listed" in low or "clean" in low or "score" in low:
-            verdict.append(s)
-        if re.search(r"\b(listed|blacklisted|bad)\b", low):
-            hits.append(s)
-    return {
-        "ok": True,
-        "lines": len(lines),
-        "verdict_lines": verdict[:40],
-        "hits": hits[:40],
-        "raw": out,
-    }
+        return {"ok": False, "error": (err or out[-500:])[:500]}
+    try:
+        data = json.loads(out)
+    except json.JSONDecodeError:
+        return {"ok": True, "text_mode": True, "raw": out[-2000:]}
+    return {"ok": True, "json": data}
 
 
 def dnsbl_check(ip: str) -> dict:
+    """
+    Spamhaus DNSBL. Учитывает трюк: код 127.255.255.254 = query blocked
+    (публичный DNS вроде 8.8.8.8 рейт-лимитится, это НЕ факт листинга).
+    """
     octets = ip.split(".")
     if len(octets) != 4:
         return {"ok": False, "error": "bad ip"}
@@ -117,13 +115,26 @@ def dnsbl_check(ip: str) -> dict:
         q = f"{reversed_ip}.{zone}"
         try:
             answers = socket.gethostbyname_ex(q)[2]
-            results[zone] = {"listed": True, "codes": answers}
+            if any(a == "127.255.255.254" for a in answers):
+                results[zone] = {"listed": False, "rate_limited": True, "codes": answers}
+            elif any(a == "127.255.255.255" for a in answers):
+                results[zone] = {"listed": False, "typing_error": True, "codes": answers}
+            else:
+                results[zone] = {"listed": True, "codes": answers}
         except socket.gaierror:
             results[zone] = {"listed": False}
         except Exception as e:
             results[zone] = {"error": str(e)}
     listed_zones = [z for z, r in results.items() if r.get("listed")]
-    return {"ok": True, "listed_in": listed_zones, "detail": results}
+    rate_limited = any(r.get("rate_limited") for r in results.values())
+    return {
+        "ok": True,
+        "listed_in": listed_zones,
+        "rate_limited": rate_limited,
+        "note": ("Spamhaus rate-limited public DNS — результат недостоверен, "
+                 "нужен собственный резолвер или ключ.") if rate_limited else "",
+        "detail": results,
+    }
 
 
 def ping_target(host: str, count: int = 4) -> dict:

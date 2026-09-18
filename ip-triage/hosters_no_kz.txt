@@ -1,0 +1,28 @@
+# Норвегия + Казахстан — кандидатные хостеры под наш VPN
+# Формат: ASN <tab> short-name <tab> заметка
+
+# --- Норвегия ---
+24940	virtono	Virtono → реселлер Hetzner
+57169	edis	EDIS Global (актуальный ASN)
+49981	mangohost	MangoHost → реселлер WorldStream (NL)
+47292	gigahost-dk	Gigahost.dk → Sentia DK
+56655	gigahost-no	Gigahost AS (Norway)
+203570	gigahost-aps	Gigahost ApS (Norway)
+24940	avanetco	AvanetCo → реселлер Hetzner
+36352	server4crypto	Server4Crypto → ColoCrossing/HostPapa
+21499	justvps	JustVPS → GoDaddy Host Europe
+63949	justvps-2	JustVPS через Linode/Akamai
+
+# --- Казахстан ---
+214036	ultahost	Ultahost, Inc. (собственный AS)
+44259	ultahost-ap	Ultahost, Inc. (AP AS)
+209160	pq	PQ.Hosting
+35415	hostry	Hostry → Webzilla
+
+# --- дополнительно найдено веб-разведкой ---
+9009	ishosting	ishosting → реселлер M247 (крупный EU VPS-провайдер, есть NO)
+# terrahost — то же самое что gigahost.no (AS56655), Terrahost переименован в Gigahost AS
+# nordbastion — реселлер, upstream не найден (сайт на Cloudflare, LG показывает мусорный AS213232 Radware)
+# impreza.host — реселлер, IP скрыты (SPA-сайт, нет тестовых IP)
+# cryptovps.net — сайт не отвечает вообще (мёртв на 01.09.2026)
+# vpsfast.net — реселлер, IP скрыты (SPA-сайт, нет тестовых IP)

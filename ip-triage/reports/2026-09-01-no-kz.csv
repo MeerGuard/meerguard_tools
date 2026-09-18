@@ -1,0 +1,15 @@
+asn,name,note,ok,verdict,hostile,prefixes_v4,total_v4,black_pct,black_hits,white_pct,white_hits,pdb_type,pdb_scope,pdb_name,source,error
+47292,gigahost-dk,Gigahost.dk → Sentia DK,True,OK,False,115,114688,0.0,0,5.8036,6656,,Not Disclosed,Sentia Danmark,ripe,
+209160,pq,PQ.Hosting,True,OK,False,1,256,0.0,0,0.0,0,no-pdb,,,cache,
+44259,ultahost-ap,"Ultahost, Inc. (AP AS)",True,OK,False,19,4864,0.0,0,0.0,0,,,Ultahost,ripe,
+36352,server4crypto,Server4Crypto → ColoCrossing/HostPapa,True,OK,False,3191,1051136,0.0028,29,0.0487,512,NSP,Not Disclosed,ColoCrossing,ripe,
+57169,edis,EDIS Global (актуальный ASN),True,OK,False,120,30976,0.0065,2,12.3967,3840,Enterprise,Global,EDIS GmbH,ripe,
+63949,justvps-2,JustVPS через Linode/Akamai,True,OK,False,350,1360640,0.0071,97,0.2822,3840,Content,Global,Linode AS63949,cache,
+56655,gigahost-no,Gigahost AS (Norway),True,OK,False,56,25856,0.0116,3,2.9703,768,NSP,Europe,Gigahost AS,ripe,
+21499,justvps,JustVPS → GoDaddy Host Europe,True,OK,False,47,82688,0.0484,40,2.4768,2048,no-pdb,,,ripe,
+214036,ultahost,"Ultahost, Inc. (собственный AS)",True,OK,False,86,22016,0.1635,36,1.1628,256,,Global,"Ultahost, Inc.",ripe,
+49981,mangohost,MangoHost → реселлер WorldStream (NL),True,OK,False,119,76288,0.173,132,9.0604,6912,Network Services,Europe,Worldstream BV,ripe,
+35415,hostry,Hostry → Webzilla,True,OK,False,229,60160,0.2776,167,1.7021,1024,Content,Europe,Webzilla EU,ripe,
+24940,virtono,Virtono → реселлер Hetzner,True,HOSTILE-ASN,True,91,3171840,0.0183,580,1.0573,33536,Content,Europe,Hetzner Online,cache,
+24940,avanetco,AvanetCo → реселлер Hetzner,True,HOSTILE-ASN,True,91,3171840,0.0183,580,1.0573,33536,Content,Europe,Hetzner Online,cache,
+203570,gigahost-aps,Gigahost ApS (Norway),False,,,,,,,,,,,,,AS203570: no prefixes found in RIPE or ipverse

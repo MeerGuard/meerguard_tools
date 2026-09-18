@@ -1,0 +1,352 @@
+{
+  "when": "2026-09-01T15:42:55Z",
+  "ip": "5.180.27.163",
+  "ptr": "vm16035299.example.com",
+  "hostname": "vm16035299.example.com",
+  "ip_check_place": {
+    "ok": false,
+    "error": "\n\u001b[36m\u001b[1m[5.180.27.163]# \u001b[36m\u001b[1mChecking IP database \u001b[3mMaxmind \u001b[0m\u001b[36m\u001b[1m........... ⠋ 03% \u001b[0m\n\u001b[36m\u001b[1m[5.180.27.163]# \u001b[36m\u001b[1mChecking IP database \u001b[3mMaxmind \u001b[0m\u001b[36m\u001b[1m........... ⠙ 03% \u001b[0m\n\u001b[36m\u001b[1m[5.180.27.163]# \u001b[36m\u001b[1mChecking IP database \u001b[3mMaxmind \u001b[0m\u001b[36m\u001b[1m........... ⠹ 03% \u001b[0m\n\u001b[36m\u001b[1m[5.180.27.163]# \u001b[36m\u001b[1mChecking IP database \u001b[3mMaxmind \u001b[0m\u001b[36m\u001b[1m........... ⠸ 03% \u001b[0m\n\u001b[36m\u001b[1m[5.180.27.163]# \u001b[36m\u001b[1mChecking IP database \u001b[3mMaxmind \u001b[0m\u001b[36m\u001b[1m......."
+  },
+  "dnsbl_spamhaus": {
+    "ok": true,
+    "listed_in": [],
+    "rate_limited": true,
+    "note": "Spamhaus rate-limited public DNS — результат недостоверен, нужен собственный резолвер или ключ.",
+    "detail": {
+      "zen.spamhaus.org": {
+        "listed": false,
+        "rate_limited": true,
+        "codes": [
+          "127.255.255.254"
+        ]
+      },
+      "sbl.spamhaus.org": {
+        "listed": false,
+        "rate_limited": true,
+        "codes": [
+          "127.255.255.254"
+        ]
+      },
+      "xbl.spamhaus.org": {
+        "listed": false,
+        "rate_limited": true,
+        "codes": [
+          "127.255.255.254"
+        ]
+      },
+      "pbl.spamhaus.org": {
+        "listed": false,
+        "rate_limited": true,
+        "codes": [
+          "127.255.255.254"
+        ]
+      }
+    }
+  },
+  "ipregion": {
+    "ok": true,
+    "services": {
+      "version": 1,
+      "ipv4": "5.180.27.163",
+      "ipv6": null,
+      "results": "{'primary': [{'service': 'maxmind.com', 'ipv4': 'KZ', 'ipv6': None}, {'service':"
+    },
+    "raw": {
+      "version": 1,
+      "ipv4": "5.180.27.163",
+      "ipv6": null,
+      "results": {
+        "primary": [
+          {
+            "service": "maxmind.com",
+            "ipv4": "KZ",
+            "ipv6": null
+          },
+          {
+            "service": "rdap.db.ripe.net",
+            "ipv4": "KZ",
+            "ipv6": null
+          },
+          {
+            "service": "ipinfo.io",
+            "ipv4": "KZ",
+            "ipv6": null
+          },
+          {
+            "service": "cloudflare.com",
+            "ipv4": "KZ",
+            "ipv6": null
+          },
+          {
+            "service": "ipregistry.co",
+            "ipv4": "US",
+            "ipv6": null
+          },
+          {
+            "service": "ipapi.co",
+            "ipv4": "Rate-limit",
+            "ipv6": null
+          },
+          {
+            "service": "ifconfig.co",
+            "ipv4": "US",
+            "ipv6": null
+          },
+          {
+            "service": "ip2location.io",
+            "ipv4": "KZ",
+            "ipv6": null
+          },
+          {
+            "service": "iplocation.com",
+            "ipv4": "KZ",
+            "ipv6": null
+          },
+          {
+            "service": "country.is",
+            "ipv4": "KZ",
+            "ipv6": null
+          },
+          {
+            "service": "geoapify.com",
+            "ipv4": "KZ",
+            "ipv6": null
+          },
+          {
+            "service": "geojs.io",
+            "ipv4": "KZ",
+            "ipv6": null
+          },
+          {
+            "service": "ipapi.is",
+            "ipv4": "null",
+            "ipv6": null
+          },
+          {
+            "service": "ipbase.com",
+            "ipv4": "MT",
+            "ipv6": null
+          },
+          {
+            "service": "ipquery.io",
+            "ipv4": "MT",
+            "ipv6": null
+          },
+          {
+            "service": "ipwho.is",
+            "ipv4": "KZ",
+            "ipv6": null
+          },
+          {
+            "service": "ip-api.com",
+            "ipv4": "KZ",
+            "ipv6": null
+          }
+        ],
+        "custom": [
+          {
+            "service": "Google",
+            "ipv4": "KZ",
+            "ipv6": null
+          },
+          {
+            "service": "YouTube",
+            "ipv4": "KZ",
+            "ipv6": null
+          },
+          {
+            "service": "Twitch",
+            "ipv4": "KZ",
+            "ipv6": null
+          },
+          {
+            "service": "ChatGPT",
+            "ipv4": "KZ",
+            "ipv6": null
+          },
+          {
+            "service": "Netflix",
+            "ipv4": "KZ",
+            "ipv6": null
+          },
+          {
+            "service": "Spotify",
+            "ipv4": "KZ",
+            "ipv6": null
+          },
+          {
+            "service": "Reddit",
+            "ipv4": "KZ",
+            "ipv6": null
+          },
+          {
+            "service": "Disney+",
+            "ipv4": "null",
+            "ipv6": null
+          },
+          {
+            "service": "Gemini Supported",
+            "ipv4": "Yes",
+            "ipv6": null
+          },
+          {
+            "service": "Reddit (Guest Access)",
+            "ipv4": "No",
+            "ipv6": null
+          },
+          {
+            "service": "YouTube Premium",
+            "ipv4": "Yes",
+            "ipv6": null
+          },
+          {
+            "service": "Spotify Signup",
+            "ipv4": "Yes",
+            "ipv6": null
+          },
+          {
+            "service": "Disney+ Access",
+            "ipv4": "No",
+            "ipv6": null
+          },
+          {
+            "service": "Apple",
+            "ipv4": "KZ",
+            "ipv6": null
+          },
+          {
+            "service": "Steam",
+            "ipv4": "KZ",
+            "ipv6": null
+          },
+          {
+            "service": "Tiktok",
+            "ipv4": "US",
+            "ipv6": null
+          },
+          {
+            "service": "Ookla Speedtest",
+            "ipv4": "KZ",
+            "ipv6": null
+          },
+          {
+            "service": "JetBrains",
+            "ipv4": "MT",
+            "ipv6": null
+          },
+          {
+            "service": "PlayStation",
+            "ipv4": null,
+            "ipv6": null
+          },
+          {
+            "service": "Microsoft",
+            "ipv4": "MT",
+            "ipv6": null
+          }
+        ],
+        "cdn": [
+          {
+            "service": "Cloudflare CDN",
+            "ipv4": "KZ (AKX)",
+            "ipv6": null
+          },
+          {
+            "service": "YouTube CDN",
+            "ipv4": "KZ (ALA)",
+            "ipv6": null
+          },
+          {
+            "service": "Netflix CDN",
+            "ipv4": "DE",
+            "ipv6": null
+          }
+        ]
+      }
+    }
+  },
+  "ru_ping": {
+    "yandex.ru": {
+      "ok": true,
+      "loss_pct": 0.0,
+      "avg_ms": 60.586
+    },
+    "mail.ru": {
+      "ok": true,
+      "loss_pct": 0.0,
+      "avg_ms": 137.322
+    },
+    "vk.com": {
+      "ok": true,
+      "loss_pct": 0.0,
+      "avg_ms": 67.227
+    },
+    "gosuslugi.ru": {
+      "ok": true,
+      "loss_pct": 0.0,
+      "avg_ms": 90.553
+    },
+    "sber.ru": {
+      "ok": false,
+      "error": "PING sber.ru (84.252.149.198) 56(84) bytes of data.\n\n--- sber.ru ping statistics ---\n4 packets transmitted, 0 received, 100% packet loss, time 3079ms\n\n"
+    },
+    "ok.ru": {
+      "ok": true,
+      "loss_pct": 0.0,
+      "avg_ms": 52.871
+    }
+  },
+  "ru_https": {
+    "yandex.ru": {
+      "ok": true,
+      "handshake_ms": 220.8,
+      "cipher": "TLS_AES_256_GCM_SHA384",
+      "tls_version": "TLSv1.3",
+      "status": "HTTP/1.1 302 Moved temporarily"
+    },
+    "mail.ru": {
+      "ok": true,
+      "handshake_ms": 201.6,
+      "cipher": "ECDHE-RSA-AES256-GCM-SHA384",
+      "tls_version": "TLSv1.2",
+      "status": "HTTP/1.1 200 OK"
+    },
+    "vk.com": {
+      "ok": true,
+      "handshake_ms": 1272.7,
+      "cipher": "TLS_AES_256_GCM_SHA384",
+      "tls_version": "TLSv1.3",
+      "status": "HTTP/1.1 418 "
+    },
+    "gosuslugi.ru": {
+      "ok": true,
+      "handshake_ms": 196.9,
+      "cipher": "TLS_AES_128_GCM_SHA256",
+      "tls_version": null,
+      "status": "HTTP/1.1 200 OK"
+    },
+    "sber.ru": {
+      "ok": true,
+      "handshake_ms": 286.0,
+      "cipher": "TLS_AES_128_GCM_SHA256",
+      "tls_version": null,
+      "status": "HTTP/1.1 200 OK"
+    },
+    "ok.ru": {
+      "ok": true,
+      "handshake_ms": 166.3,
+      "cipher": "TLS_AES_256_GCM_SHA384",
+      "tls_version": "TLSv1.3",
+      "status": "HTTP/1.1 200 "
+    }
+  },
+  "summary": {
+    "public_ip": "5.180.27.163",
+    "spamhaus_listed_in": [],
+    "ru_ping_alive": 5,
+    "ru_https_alive": 6,
+    "ru_targets_total": 6,
+    "ip_check_hits": null,
+    "ipregion_services": 4
+  }
+}

@@ -59,9 +59,9 @@
 2026-09-04-speedslots-access/docs/2026-09-15-hostery-po-stranam.md`; раньше — Польша
 `…/docs/2026-09-11-polsha-hostery.md` и `configs/stage/2026-09-09-search-of-wl-twb/docs/2026-09-10-ip-triage-i-hostery.md`.
 
-## Источники (все проверены, живые на 01.09.2026)
+## Источники (проверены 01.09.2026, повторно 18.09.2026 прогоном fetch_lists/country_score/country_whitelist/probe)
 
-- Чёрные списки: `github.com/1andrevich/Re-filter-lists` (ipsum.lst), `github.com/eduard256/russia-blocked-ips` (ip.txt), `antifilter.download/list/subnet.lst`.
+- Чёрные списки: `github.com/1andrevich/Re-filter-lists` (ipsum.lst), `github.com/eduard256/russia-blocked-ips` (ip.txt), `antifilter.download/list/subnet.lst` (основной; на 18.09 в нём всего ~75 подсетей) и справочно `antifilter.download/list/allyouneed.lst` (`blacklist_antifilter_all.lst`, ~16,8 тыс. подсетей: /24 целиком, если заблокирован любой ресурс — грубый, у рабочего UpCloud FI даёт 17 %, в основной % не входит).
 - Белый список мобильных: `github.com/hxehex/russia-mobile-internet-whitelist` (cidrwhitelist.txt).
 - ASN → подсети: `stat.ripe.net` (без ключа), `github.com/ipverse/asn-ip` (fallback офлайн).
 - Классификация ASN (тип сети): `peeringdb.com/api/net?asn=<N>` — Content/NSP/Cable/DSL/ISP/Enterprise. Отсутствие записи в PeeringDB — тоже сигнал (хостер не в точках обмена).

@@ -19,6 +19,7 @@ BLACKLISTS_PRIMARY = [
 ]
 BLACKLISTS_REFERENCE = [
     ("eduard", "blacklist_eduard.lst"),
+    ("antifilter_all", "blacklist_antifilter_all.lst"),
 ]
 BLACKLISTS = BLACKLISTS_PRIMARY + BLACKLISTS_REFERENCE
 WHITELISTS = [

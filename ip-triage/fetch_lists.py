@@ -15,6 +15,10 @@ SOURCES = [
      "https://raw.githubusercontent.com/eduard256/russia-blocked-ips/main/ip.txt"),
     ("blacklist_antifilter.lst",
      "https://antifilter.download/list/subnet.lst"),
+    # Полный список antifilter: /24 целиком, если в ней заблокирован хоть один ресурс.
+    # Грубый (у чистого UpCloud FI даёт 17 %), поэтому только справочно, в основной % не входит.
+    ("blacklist_antifilter_all.lst",
+     "https://antifilter.download/list/allyouneed.lst"),
     ("whitelist_mobile_hxehex.lst",
      "https://raw.githubusercontent.com/hxehex/russia-mobile-internet-whitelist/main/cidrwhitelist.txt"),
 ]

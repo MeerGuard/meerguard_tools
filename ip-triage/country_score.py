@@ -58,6 +58,9 @@ def main() -> int:
     wl = index_by_octet(load_cidrs(os.path.join(d, "whitelist_mobile_hxehex.lst")))
     bl = index_by_octet(load_cidrs(os.path.join(d, "blacklist_refilter.lst"))
                         + load_cidrs(os.path.join(d, "blacklist_antifilter.lst")))
+    # Справочно: полный список antifilter (грубый, /24 целиком) — в основной % не входит.
+    all_path = os.path.join(d, "blacklist_antifilter_all.lst")
+    bl_all = index_by_octet(load_cidrs(all_path)) if os.path.exists(all_path) else None
 
     def geo(p):
         try:
@@ -87,17 +90,20 @@ def main() -> int:
         tot = sum(p.num_addresses for p, _ in local)
         w = sum(intersect_count(p, wl) for p, _ in local)
         b = sum(intersect_count(p, bl) for p, _ in local)
+        b_all = sum(intersect_count(p, bl_all) for p, _ in local) if bl_all is not None else None
         r = {
             "asn": asn, "name": name, "hostile": asn in HOSTILE_ASNS,
             "v4_prefixes": len(pre), "geo_checked": len(check),
             "cc_prefixes": len(local), "cc_addrs": tot,
             "white_pct": round(100 * w / tot, 2) if tot else None,
             "black_pct": round(100 * b / tot, 3) if tot else None,
+            "black_all_pct": round(100 * b_all / tot, 2) if tot and b_all is not None else None,
             "cc_list": [(str(p), c, intersect_count(p, wl), intersect_count(p, bl)) for p, c in local][:60],
         }
         results.append(r)
         print(f"AS{asn} {name}: v4 {len(pre)} (гео по {len(check)}), {cc}-префиксов {len(local)}, адресов {tot}, "
-              f"белых {r['white_pct']}%, чёрных {r['black_pct']}%{'  HOSTILE' if r['hostile'] else ''}", flush=True)
+              f"белых {r['white_pct']}%, чёрных {r['black_pct']}% (справочно antifilter-all {r['black_all_pct']}%)"
+              f"{'  HOSTILE' if r['hostile'] else ''}", flush=True)
     json.dump({"cc": cc, "results": results}, open(a.out, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     return 0
 

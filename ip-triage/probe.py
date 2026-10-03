@@ -235,15 +235,27 @@ def globalping_http(ip: str, sni: str = "cloudflare.com", limit: int = 5, wait: 
     }
 
 
+def latencylab_ping(ip: str, port: int = 443) -> dict:
+    """Мобильные модемы 5 операторов в режиме белых списков (одна точка — агент orel)."""
+    try:
+        import latencylab
+        return latencylab.ping_all(ip, port)
+    except Exception as e:
+        return {"tool": "latencylab", "ok": False, "error": str(e)}
+
+
 def probe_one(ip: str, sni: str = "cloudflare.com", port: int = 443,
-              city: str = None, asn: int = None, network: str = None) -> dict:
-    with ThreadPoolExecutor(max_workers=3) as pool:
+              city: str = None, asn: int = None, network: str = None,
+              ll: bool = False) -> dict:
+    with ThreadPoolExecutor(max_workers=4) as pool:
         f_ch = pool.submit(check_host_tcp, ip, port)
         f_gp = pool.submit(globalping_ping, ip, 5, 25, city, asn, network)
         f_ht = pool.submit(globalping_http, ip, sni, 5, 30, city, asn, network)
+        f_ll = pool.submit(latencylab_ping, ip, port) if ll else None
         ch = f_ch.result()
         gp = f_gp.result()
         ht = f_ht.result()
+        lab = f_ll.result() if f_ll else None
 
     ch_alive = ch.get("alive_nodes", 0) if ch.get("ok") else 0
     ch_total = ch.get("total_nodes", 0) if ch.get("ok") else 0
@@ -263,13 +275,25 @@ def probe_one(ip: str, sni: str = "cloudflare.com", port: int = 443,
         else:
             verdict = "PARTIAL"
 
+    # Белые списки — отдельная ось: живой с провода IP может не проходить с мобилки.
+    whitelist = None
+    if lab and lab.get("ok"):
+        if lab["alive_ops"] == lab["total_ops"]:
+            whitelist = "WL-ALL"
+        elif lab["alive_ops"]:
+            whitelist = "WL-PARTIAL"
+        else:
+            whitelist = "WL-NONE"
+
     return {
         "ip": ip,
         "sni": sni,
         "verdict": verdict,
+        "whitelist": whitelist,
         "check_host": ch,
         "globalping": gp,
         "globalping_http": ht,
+        "latencylab": lab,
         "checked_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
     }
 
@@ -284,6 +308,10 @@ def main() -> int:
     ap.add_argument("--city", default=None, help="Globalping: конкретный город РФ (напр. Novosibirsk)")
     ap.add_argument("--asn", type=int, default=None, help="Globalping: конкретный ASN (напр. 8359 = МТС)")
     ap.add_argument("--network", default=None, help="Globalping: подстрока имени сети (напр. 'MTS')")
+    ap.add_argument("--ll", action="store_true",
+                    help="ТОЛЬКО для узлов под белые зоны: ещё и через мобильные модемы Latency Lab "
+                         "(5 операторов, 1 запрос из суточного лимита 100 на IP). "
+                         "Для обычного зарубежного хостера не включать.")
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args()
 
@@ -294,11 +322,12 @@ def main() -> int:
             target_line += f" | пробы: city={args.city} asn={args.asn} network={args.network}"
         print(f"probing {ip} ({target_line}) ...", file=sys.stderr)
         r = probe_one(ip, sni=args.sni, port=args.port,
-                      city=args.city, asn=args.asn, network=args.network)
+                      city=args.city, asn=args.asn, network=args.network, ll=args.ll)
         all_res.append(r)
         if args.json:
             continue
-        print(f"\n=== {ip} — {r['verdict']} ===")
+        wl = f" | {r['whitelist']}" if r["whitelist"] else ""
+        print(f"\n=== {ip} — {r['verdict']}{wl} ===")
         ch = r["check_host"]
         gp = r["globalping"]
         ht = r["globalping_http"]
@@ -328,6 +357,15 @@ def main() -> int:
                     print(f"     [{mark}] {p['city']} AS{p['asn']} {p['network']}  err={p.get('error')}")
         else:
             print(f"  globalping HTTPS: ERROR {ht.get('error')}")
+        lab = r["latencylab"]
+        if lab and lab.get("ok"):
+            print(f"  latencylab (мобильные модемы, белые списки): {lab['alive_ops']}/{lab['total_ops']} операторов")
+            for p in lab["per_op"]:
+                print(f"     [{'+' if p['ok'] else '-'}] {p['operator']}: {p['output']}")
+            if lab.get("skipped"):
+                print(f"     пропущено: {lab['skipped']}")
+        elif lab:
+            print(f"  latencylab: ERROR {lab.get('error')}")
 
     if args.json:
         print(json.dumps(all_res, ensure_ascii=False, indent=2))
@@ -335,4 +373,5 @@ def main() -> int:
 
 
 if __name__ == "__main__":
+    sys.stdout.reconfigure(encoding="utf-8")
     sys.exit(main())
